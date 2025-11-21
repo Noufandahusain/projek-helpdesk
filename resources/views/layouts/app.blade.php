@@ -27,16 +27,24 @@
                     <span class="text-xl font-bold text-slate-900">Campus Helpdesk</span>
                 </div>
 
-                @php
-                    $navItems = [
-                        ['label' => 'Dashboard', 'route' => 'student.dashboard'],
-                        ['label' => 'Create Ticket', 'route' => 'student.tickets.create'],
-                        ['label' => 'My Tickets', 'route' => 'student.tickets.index'],
-                    ];
-                @endphp
-
-                <div class="hidden md:flex items-center gap-3" x-data="{ open: false }">
+                <div class="hidden md:flex items-center gap-3" x-data="{ open: false, notify: false }">
                     @auth
+                        @php
+                            $navItems = auth()->user()->isAdmin()
+                                ? [
+                                    ['label' => 'Dashboard', 'route' => 'admin.dashboard'],
+                                    ['label' => 'Tickets', 'route' => 'admin.tickets.index'],
+                                ]
+                                : [
+                                    ['label' => 'Dashboard', 'route' => 'student.dashboard'],
+                                    ['label' => 'Create Ticket', 'route' => 'student.tickets.create'],
+                                    ['label' => 'My Tickets', 'route' => 'student.tickets.index'],
+                                ];
+                            $unreadNotificationCount = !auth()->user()->isAdmin()
+                                ? auth()->user()->unreadNotifications()->count()
+                                : 0;
+                        @endphp
+
                         @foreach ($navItems as $item)
                             <a
                                 href="{{ route($item['route']) }}"
@@ -45,6 +53,43 @@
                                 {{ $item['label'] }}
                             </a>
                         @endforeach
+                        @if (!auth()->user()->isAdmin())
+                            <div class="relative">
+                                <button
+                                    type="button"
+                                    class="p-2 border border-slate-200 rounded-lg hover:bg-slate-100 relative"
+                                    @click="notify = !notify"
+                                >
+                                    <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                                        <path d="M15 17h5l-1.403-1.403A2 2 0 0 1 18 14.172V11a6 6 0 1 0-12 0v3.172a2 2 0 0 1-.597 1.425L4 17h5"></path>
+                                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                                    </svg>
+                                    @if ($unreadNotificationCount > 0)
+                                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
+                                            {{ $unreadNotificationCount }}
+                                        </span>
+                                    @endif
+                                </button>
+                                <div
+                                    x-show="notify"
+                                    x-cloak
+                                    @click.outside="notify = false"
+                                    class="absolute right-0 mt-2 w-72 bg-white border border-slate-200 rounded-xl shadow-lg p-4 space-y-3"
+                                >
+                                    <p class="text-sm font-semibold text-slate-700">Notifikasi Terbaru</p>
+                                    @forelse (auth()->user()->notifications()->latest()->limit(5)->get() as $notification)
+                                        <div class="text-sm border border-slate-100 rounded-lg p-3 {{ $notification->read_at ? 'bg-white' : 'bg-blue-50' }}">
+                                            <p class="font-semibold text-slate-900">{{ $notification->data['title'] ?? 'Ticket Update' }}</p>
+                                            <p class="text-slate-600">{{ $notification->data['message'] ?? '' }}</p>
+                                            <p class="text-xs text-slate-500 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                                        </div>
+                                    @empty
+                                        <p class="text-sm text-slate-600">Belum ada notifikasi.</p>
+                                    @endforelse
+                                    <p class="text-xs text-slate-500">Notifikasi akan otomatis terbaca saat Anda membuka dashboard mahasiswa.</p>
+                                </div>
+                            </div>
+                        @endif
                         <div class="relative">
                             <button
                                 type="button"
@@ -85,8 +130,30 @@
                     @endguest
                 </div>
 
-                <div class="md:hidden" x-data="{ openUser: false }">
+                <div class="md:hidden w-full" x-data="{ openUser: false }">
                     @auth
+                        @php
+                            $navItemsMobile = auth()->user()->isAdmin()
+                                ? [
+                                    ['label' => 'Dashboard', 'route' => 'admin.dashboard'],
+                                    ['label' => 'Tickets', 'route' => 'admin.tickets.index'],
+                                ]
+                                : [
+                                    ['label' => 'Dashboard', 'route' => 'student.dashboard'],
+                                    ['label' => 'Create Ticket', 'route' => 'student.tickets.create'],
+                                    ['label' => 'My Tickets', 'route' => 'student.tickets.index'],
+                                ];
+                        @endphp
+                        <div class="flex flex-col gap-2 mb-3">
+                            @foreach ($navItemsMobile as $item)
+                                <a
+                                    href="{{ route($item['route']) }}"
+                                    class="px-3 py-2 rounded-lg border border-slate-200 text-slate-700 font-medium {{ request()->routeIs($item['route']) ? 'bg-blue-50 text-blue-600 border-blue-200' : 'hover:bg-slate-100' }}"
+                                >
+                                    {{ $item['label'] }}
+                                </a>
+                            @endforeach
+                        </div>
                         <button
                             type="button"
                             class="w-full text-left px-3 py-2 text-slate-700 font-semibold bg-slate-100 rounded-lg flex items-center justify-between"

@@ -20,6 +20,7 @@ class AuthController extends Controller
         return view('auth.register');
     }
 
+    // REGISTER 
     public function register(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -47,8 +48,31 @@ class AuthController extends Controller
         return redirect()->intended(route('student.dashboard'));
     }
 
+
+    // LOGIN 
     public function login(Request $request): RedirectResponse
     {
+
+        $user = User::where('email', $request->email)->first();
+
+        // Jika user adalah admin → langsung proses login admin
+        if ($user && $user->role === 'admin') {
+            $validated = $request->validate([
+                'email' => ['required', 'email'],
+                'password' => ['required'],
+            ]);
+
+            if (! Auth::attempt($validated)) {
+                return back()->withErrors([
+                    'email' => 'Email atau password admin tidak valid.',
+                ]);
+            }
+
+            return redirect()->route('admin.dashboard');
+        }
+
+
+
         $validated = $request->validate([
             'email' => [
                 'required',

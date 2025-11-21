@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->enum('role', ['mahasiswa', 'admin'])->default('mahasiswa');
             $table->rememberToken();
             $table->timestamps();
         });
@@ -47,3 +48,34 @@ return new class extends Migration
         Schema::dropIfExists('sessions');
     }
 };
+
+class User extends Authenticatable
+{
+    // ...existing code...
+
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+        'role', // pastikan ada
+    ];
+
+    // ...existing code...
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isMahasiswa(): bool
+    {
+        return $this->role === 'mahasiswa';
+    }
+
+    public function tickets()
+    {
+        return $this->hasMany(\App\Models\Ticket::class);
+    }
+
+    // ...existing code...
+}

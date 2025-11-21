@@ -4,21 +4,32 @@ namespace App\Http\Controllers;
 
 use App\Models\Ticket;
 use App\Models\TicketComment;
+use App\Models\User;
+use App\Notifications\TicketStatusUpdated;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class TicketController extends Controller
 {
-    /**
-     * Display dashboard metrics and sample tickets.
-     */
+    /* ============================================================
+    |  STUDENT DASHBOARD
+    ============================================================ */
     public function dashboard(): View
     {
-        $tickets = Ticket::latest()->get();
+        $user = Auth::user();
+        $tickets = Ticket::where('user_id', $user->id)->latest()->get();
+        $notifications = $user->notifications()->latest()->limit(5)->get();
+        $unreadCollection = $user->unreadNotifications;
+        $unreadNotifications = $unreadCollection->count();
+
+        if ($unreadCollection->isNotEmpty()) {
+            $unreadCollection->markAsRead();
+        }
 
         return view('student.dashboard', [
             'tickets' => $tickets,
@@ -26,32 +37,29 @@ class TicketController extends Controller
             'openTickets' => $tickets->where('status', 'Open')->count(),
             'inProgressTickets' => $tickets->where('status', 'In Progress')->count(),
             'resolvedTickets' => $tickets->where('status', 'Resolved')->count(),
+            'notifications' => $notifications,
+            'unreadNotifications' => $unreadNotifications,
         ]);
     }
 
-    /**
-     * Show paginated / full list of tickets.
-     */
+    /* ============================================================
+    |  STUDENT - MY TICKETS
+    ============================================================ */
     public function index(): View
     {
-        $tickets = Ticket::latest()->get();
+        $tickets = Ticket::where('user_id', Auth::id())->latest()->get();
 
-        return view('student.my-tickets', [
-            'tickets' => $tickets,
-        ]);
+        return view('student.my-tickets', ['tickets' => $tickets]);
     }
 
-    /**
-     * Show ticket creation form.
-     */
+    /* ============================================================
+    |  STUDENT CREATE TICKET
+    ============================================================ */
     public function create(): View
     {
         return view('student.create-ticket');
     }
 
-    /**
-     * Store a newly created ticket in storage.
-     */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
@@ -63,10 +71,9 @@ class TicketController extends Controller
             'attachment' => ['nullable', 'file', 'max:5120'],
         ]);
 
-        $attachmentPath = null;
-        if ($request->hasFile('attachment')) {
-            $attachmentPath = $request->file('attachment')->store('ticket-attachments', 'public');
-        }
+        $attachmentPath = $request->hasFile('attachment')
+            ? $request->file('attachment')->store('ticket-attachments', 'public')
+            : null;
 
         Ticket::create([
             'user_id' => Auth::id(),
@@ -83,59 +90,68 @@ class TicketController extends Controller
             ->with('status', 'Ticket created successfully.');
     }
 
-    /**
-     * Display the specified ticket.
-     */
+    /* ============================================================
+    |  STUDENT / ADMIN - SHOW TICKET
+    ============================================================ */
     public function show(Ticket $ticket): View
     {
-        // Comments feature not yet implemented; send empty collection for now.
-        $ticket->load(['comments' => fn ($query) => $query->latest(), 'user']);
+        $this->authorizeTicketVisibility($ticket);
+
+        $ticket->load([
+            'comments' => fn($q) => $q->latest(),
+            'user',
+            'assignedAdmin',
+        ]);
+
         $attachmentUrl = $ticket->attachment_path ? Storage::url($ticket->attachment_path) : null;
-        $creatorName = $ticket->user?->name ?? 'Unknown';
+
+        if (Auth::user()->role === 'admin') {
+            return view('admin.tickets.show', [
+                'ticket' => $ticket,
+                'comments' => $ticket->comments,
+                'attachmentUrl' => $attachmentUrl,
+                'creatorName' => $ticket->user?->name ?? 'Unknown',
+                'admins' => User::where('role', 'admin')->orderBy('name')->get(),
+            ]);
+        }
 
         return view('student.ticket-detail', [
             'ticket' => $ticket,
             'comments' => $ticket->comments,
             'attachmentUrl' => $attachmentUrl,
-            'creatorName' => $creatorName,
+            'creatorName' => $ticket->user?->name ?? 'Unknown',
         ]);
     }
 
-    /**
-     * Store a comment for the given ticket.
-     */
+    /* ============================================================
+    |  STUDENT COMMENT
+    ============================================================ */
     public function addComment(Request $request, Ticket $ticket): RedirectResponse
     {
+        $this->authorizeTicketVisibility($ticket);
+
         $validated = $request->validate([
             'message' => ['required', 'string'],
-            'author_name' => ['nullable', 'string', 'max:255'],
         ]);
 
         TicketComment::create([
             'ticket_id' => $ticket->id,
-            'author_name' => $validated['author_name'] ?? 'You',
-            'author_role' => 'Requester',
+            'author_name' => Auth::user()->name,
+            'author_role' => Auth::user()->role,
             'message' => $validated['message'],
         ]);
 
-        return redirect()
-            ->route('student.tickets.show', $ticket)
-            ->with('status', 'Comment added.');
+        return redirect()->back()->with('status', 'Comment added.');
     }
 
-    /**
-     * Show the form for editing the specified ticket.
-     */
+    /* ============================================================
+    |  STUDENT EDIT TICKET
+    ============================================================ */
     public function edit(Ticket $ticket): View
     {
-        return view('student.edit-ticket', [
-            'ticket' => $ticket,
-        ]);
+        return view('student.edit-ticket', ['ticket' => $ticket]);
     }
 
-    /**
-     * Update the specified ticket in storage.
-     */
     public function update(Request $request, Ticket $ticket): RedirectResponse
     {
         $validated = $request->validate([
@@ -147,32 +163,20 @@ class TicketController extends Controller
             'attachment' => ['nullable', 'file', 'max:5120'],
         ]);
 
-        $attachmentPath = $ticket->attachment_path;
         if ($request->hasFile('attachment')) {
-            if ($attachmentPath) {
-                Storage::disk('public')->delete($attachmentPath);
+            if ($ticket->attachment_path) {
+                Storage::disk('public')->delete($ticket->attachment_path);
             }
-
-            $attachmentPath = $request->file('attachment')->store('ticket-attachments', 'public');
+            $ticket->attachment_path = $request->file('attachment')->store('ticket-attachments', 'public');
         }
 
-        $ticket->update([
-            'title' => $validated['title'],
-            'category' => $validated['category'],
-            'priority' => $validated['priority'],
-            'location' => $validated['location'],
-            'description' => $validated['description'],
-            'attachment_path' => $attachmentPath,
-        ]);
+        $ticket->update($validated);
 
         return redirect()
             ->route('student.tickets.show', $ticket)
             ->with('status', 'Ticket updated successfully.');
     }
 
-    /**
-     * Remove the specified ticket from storage.
-     */
     public function destroy(Ticket $ticket): RedirectResponse
     {
         if ($ticket->attachment_path) {
@@ -187,12 +191,12 @@ class TicketController extends Controller
             ->with('status', 'Ticket deleted successfully.');
     }
 
-    /**
-     * Download a PDF report for the given ticket.
-     */
+    /* ============================================================
+    |  STUDENT PDF REPORT
+    ============================================================ */
     public function downloadReport(Ticket $ticket)
     {
-        $ticket->load(['user', 'comments' => fn ($query) => $query->latest()]);
+        $ticket->load(['user', 'comments' => fn($q) => $q->latest()]);
 
         $pdf = Pdf::loadView('student.ticket-report', [
             'ticket' => $ticket,
@@ -201,5 +205,117 @@ class TicketController extends Controller
         ])->setPaper('a4');
 
         return $pdf->download("ticket-{$ticket->id}.pdf");
+    }
+
+    /* ============================================================
+    |  ADMIN — DASHBOARD
+    ============================================================ */
+    public function adminDashboard(): View
+    {
+        $tickets = Ticket::with(['user', 'assignedAdmin'])->latest()->get();
+
+        return view('admin.dashboard', [
+            'tickets' => $tickets,
+            'totalTickets' => $tickets->count(),
+            'openTickets' => $tickets->where('status', 'Open')->count(),
+            'inProgressTickets' => $tickets->where('status', 'In Progress')->count(),
+            'resolvedTickets' => $tickets->where('status', 'Resolved')->count(),
+            'unassignedTickets' => $tickets->whereNull('assigned_admin_id')->count(),
+            'recentTickets' => $tickets->take(5),
+            'highPriorityOpen' => $tickets->filter(function ($ticket) {
+                return $ticket->status !== 'Resolved' && in_array($ticket->priority, ['High', 'Urgent']);
+            })->count(),
+        ]);
+    }
+
+    /* ============================================================
+    |  ADMIN — LIST ALL TICKETS
+    ============================================================ */
+    public function adminIndex(Request $request): View
+    {
+        $query = Ticket::with(['user', 'assignedAdmin'])->latest();
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->get('status'));
+        }
+
+        if ($request->filled('priority')) {
+            $query->where('priority', $request->get('priority'));
+        }
+
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $term = $request->get('search');
+                $q->where('title', 'like', "%{$term}%")
+                    ->orWhere('category', 'like', "%{$term}%")
+                    ->orWhere('location', 'like', "%{$term}%");
+            });
+        }
+
+        $tickets = $query->paginate(10)->withQueryString();
+
+        return view('admin.tickets.index', [
+            'tickets' => $tickets,
+            'filters' => $request->only(['status', 'priority', 'search']),
+        ]);
+    }
+
+    /* ============================================================
+    |  ADMIN — UPDATE STATUS
+    ============================================================ */
+    public function updateStatus(Request $request, Ticket $ticket): RedirectResponse
+    {
+        $validated = $request->validate([
+            'status' => ['required', Rule::in(['Open', 'In Progress', 'Resolved'])],
+            'note' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $ticket->update([
+            'status' => $validated['status'],
+        ]);
+
+        if (!empty($validated['note'])) {
+            TicketComment::create([
+                'ticket_id' => $ticket->id,
+                'author_name' => Auth::user()->name,
+                'author_role' => Auth::user()->role,
+                'message' => $validated['note'],
+            ]);
+        }
+
+        if ($ticket->user) {
+            $ticket->user->notify(new TicketStatusUpdated($ticket, Auth::user()));
+        }
+
+        return redirect()
+            ->back()
+            ->with('status', 'Ticket status updated.');
+    }
+
+    public function assignAdmin(Request $request, Ticket $ticket): RedirectResponse
+    {
+        $validated = $request->validate([
+            'assigned_admin_id' => [
+                'nullable',
+                Rule::exists('users', 'id')->where(fn($q) => $q->where('role', 'admin')),
+            ],
+        ]);
+
+        $ticket->update([
+            'assigned_admin_id' => $validated['assigned_admin_id'] ?? null,
+        ]);
+
+        return back()->with('status', 'Ticket assignment updated.');
+    }
+
+    protected function authorizeTicketVisibility(Ticket $ticket): void
+    {
+        if (Auth::user()->role === 'admin') {
+            return;
+        }
+
+        if ($ticket->user_id !== Auth::id()) {
+            abort(403);
+        }
     }
 }

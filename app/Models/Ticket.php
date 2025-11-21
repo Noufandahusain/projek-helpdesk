@@ -18,6 +18,7 @@ class Ticket extends Model
         'description',
         'attachment_path',
         'status',
+        'assigned_admin_id',
     ];
 
     protected $attributes = [
@@ -26,11 +27,16 @@ class Ticket extends Model
 
     public function comments()
     {
-        return $this->hasMany(TicketComment::class);
+        return $this->hasMany(\App\Models\TicketComment::class)->latest();
     }
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function assignedAdmin()
+    {
+        return $this->belongsTo(User::class, 'assigned_admin_id');
     }
 }

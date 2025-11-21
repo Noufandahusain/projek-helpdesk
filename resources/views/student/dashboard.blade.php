@@ -21,6 +21,42 @@
             </a>
         </div>
 
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div class="lg:col-span-1 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                <div class="flex items-center justify-between mb-2">
+                    <p class="text-sm font-semibold text-slate-600">Unread notifications</p>
+                    <span class="text-xs text-slate-500">{{ now()->format('d M Y') }}</span>
+                </div>
+                <p class="text-4xl font-bold text-slate-900">{{ $unreadNotifications ?? 0 }}</p>
+                <p class="text-sm text-slate-600 mt-2">Notifikasi baru akan otomatis ditandai dibaca ketika Anda membuka dashboard.</p>
+            </div>
+            <div class="lg:col-span-2 bg-white border border-slate-200 rounded-xl p-6 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold text-slate-900">Aktivitas Terbaru</h2>
+                    <a href="{{ route('student.tickets.index') }}" class="text-sm font-semibold text-blue-600 hover:text-blue-700">Lihat semua</a>
+                </div>
+                <div class="space-y-4">
+                    @forelse($notifications ?? [] as $notification)
+                        <div class="flex items-start gap-3 border border-slate-100 rounded-lg p-3">
+                            <div class="p-2 rounded-full bg-blue-100 text-blue-600">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                                    <path d="M15 17h5l-1.403-1.403A2 2 0 0 1 18 14.172V11a6 6 0 1 0-12 0v3.172a2 2 0 0 1-.597 1.425L4 17h5"></path>
+                                    <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-slate-900">{{ $notification->data['title'] ?? 'Ticket Update' }}</p>
+                                <p class="text-sm text-slate-600">{{ $notification->data['message'] ?? '' }}</p>
+                                <p class="text-xs text-slate-500 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                            </div>
+                        </div>
+                    @empty
+                        <p class="text-sm text-slate-600">Belum ada aktivitas terbaru.</p>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-md transition">
                 <div class="flex items-center justify-between">
