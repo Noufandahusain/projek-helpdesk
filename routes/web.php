@@ -11,8 +11,14 @@ use Illuminate\Support\Facades\Route;
 // Route::redirect('/', '/login');
 
 Route::get('/', function () {
-    return redirect()->route('login');
-});
+    if (auth()->check()) {
+        return auth()->user()->isAdmin()
+            ? redirect()->route('admin.dashboard')
+            : redirect()->route('student.dashboard');
+    }
+
+    return view('landing');
+})->name('landing');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

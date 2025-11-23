@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title', 'Campus Helpdesk')</title>
+    <title>@yield('title', 'Helptify')</title>
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
@@ -15,16 +15,10 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center gap-3">
-                    <div class="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">
-                            <rect x="5" y="3" width="14" height="18" rx="2"></rect>
-                            <path d="M9 21v-4h6v4"></path>
-                            <path d="M9 7h6"></path>
-                            <path d="M9 11h6"></path>
-                            <path d="M9 15h6"></path>
-                        </svg>
+                    <div class="p-2 bg-white border border-slate-200 rounded-lg shadow-sm">
+                        <img src="{{ asset('images/logo.png') }}" alt="Helptify" class="w-8 h-8 object-contain">
                     </div>
-                    <span class="text-xl font-bold text-slate-900">Campus Helpdesk</span>
+                    <span class="text-xl font-bold text-slate-900">Helptify</span>
                 </div>
 
                 <div class="hidden md:flex items-center gap-3" x-data="{ open: false, notify: false }">
