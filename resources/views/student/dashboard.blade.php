@@ -6,7 +6,10 @@
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
             <div>
-                <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">Student Dashboard</h1>
+                @php
+                    $firstName = explode(' ', trim(auth()->user()->name ?? 'User'))[0] ?? 'User';
+                @endphp
+                <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">{{ $firstName }} Dashboard</h1>
                 <p class="text-slate-600 mt-2">Welcome back! Monitor your facility requests</p>
             </div>
             <a

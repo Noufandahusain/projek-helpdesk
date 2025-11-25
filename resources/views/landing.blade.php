@@ -285,6 +285,11 @@
                 pointer: 0,
                 start() {
                     this.visible = this.pool.slice(0, 3).map(t => this.decorate(t));
+                    document.addEventListener('visibilitychange', () => {
+                        if (document.visibilityState === 'visible') {
+                            this.visible = this.visible.map(t => ({ ...t, isNew: false }));
+                        }
+                    });
                     this.intervalId = setInterval(() => {
                         const next = this.decorate(this.pool[this.pointer]);
                         next.isNew = true;
@@ -298,6 +303,9 @@
                                 if (this.visible[0]) this.visible[0].isNew = false;
                             });
                         });
+                        setTimeout(() => {
+                            if (this.visible[0]) this.visible[0].isNew = false;
+                        }, 100);
                     }, 2200);
                 },
                 decorate(ticket) {

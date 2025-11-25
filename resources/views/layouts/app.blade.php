@@ -112,11 +112,26 @@
                                 >
                                     <p class="text-sm font-semibold text-slate-700">Notifikasi Terbaru</p>
                                     @forelse (auth()->user()->notifications()->latest()->limit(5)->get() as $notification)
-                                        <div class="text-sm border border-slate-100 rounded-lg p-3 {{ $notification->read_at ? 'bg-white' : 'bg-blue-50' }}">
-                                            <p class="font-semibold text-slate-900">{{ $notification->data['title'] ?? 'Ticket Update' }}</p>
-                                            <p class="text-slate-600">{{ $notification->data['message'] ?? '' }}</p>
-                                            <p class="text-xs text-slate-500 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
-                                        </div>
+                                        @php
+                                            $ticketId = $notification->data['ticket_id'] ?? null;
+                                            $ticketUrl = $ticketId ? route('student.tickets.show', $ticketId) : null;
+                                        @endphp
+                                        @if ($ticketUrl)
+                                            <a
+                                                href="{{ $ticketUrl }}"
+                                                class="block text-sm border border-slate-100 rounded-lg p-3 {{ $notification->read_at ? 'bg-white' : 'bg-blue-50' }} hover:border-blue-200 hover:shadow-sm transition"
+                                            >
+                                                <p class="font-semibold text-slate-900">{{ $notification->data['title'] ?? 'Ticket Update' }}</p>
+                                                <p class="text-slate-600">{{ $notification->data['message'] ?? '' }}</p>
+                                                <p class="text-xs text-slate-500 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                                            </a>
+                                        @else
+                                            <div class="text-sm border border-slate-100 rounded-lg p-3 {{ $notification->read_at ? 'bg-white' : 'bg-blue-50' }}">
+                                                <p class="font-semibold text-slate-900">{{ $notification->data['title'] ?? 'Ticket Update' }}</p>
+                                                <p class="text-slate-600">{{ $notification->data['message'] ?? '' }}</p>
+                                                <p class="text-xs text-slate-500 mt-1">{{ $notification->created_at->diffForHumans() }}</p>
+                                            </div>
+                                        @endif
                                     @empty
                                         <p class="text-sm text-slate-600">Belum ada notifikasi.</p>
                                     @endforelse
@@ -226,4 +241,3 @@
     </div>
 </body>
 </html>
-
