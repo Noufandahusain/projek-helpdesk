@@ -8,6 +8,46 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    keyframes: {
+                        'fade-in': {
+                            '0%': { opacity: 0, transform: 'translateY(10px)' },
+                            '100%': { opacity: 1, transform: 'translateY(0)' },
+                        },
+                        'slide-up': {
+                            '0%': { opacity: 0, transform: 'translateY(24px)' },
+                            '100%': { opacity: 1, transform: 'translateY(0)' },
+                        },
+                        'pulse-soft': {
+                            '0%, 100%': { opacity: 1 },
+                            '50%': { opacity: 0.7 },
+                        },
+                        glow: {
+                            '0%, 100%': { boxShadow: '0 15px 45px -20px rgba(59,130,246,0.4)' },
+                            '50%': { boxShadow: '0 20px 60px -18px rgba(79,70,229,0.45)' },
+                        },
+                        'fill-bar': {
+                            '0%': { width: '0%' },
+                            '100%': { width: 'var(--target, 100%)' },
+                        },
+                    },
+                    animation: {
+                        'fade-in': 'fade-in 0.6s ease-out both',
+                        'slide-up': 'slide-up 0.75s ease-out both',
+                        'pulse-soft': 'pulse-soft 2.5s ease-in-out infinite',
+                        glow: 'glow 3s ease-in-out infinite',
+                        'fill-bar': 'fill-bar 1s ease-out forwards',
+                    },
+                    boxShadow: {
+                        glow: '0 20px 60px -18px rgba(59,130,246,0.3)',
+                    },
+                },
+            },
+        };
+    </script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body class="bg-slate-50 font-['Instrument_Sans'] antialiased">
@@ -15,7 +55,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center gap-3">
-                    <div class="p-2 bg-white border border-slate-200 rounded-lg shadow-sm">
+                    <div class="p-2 bg-white border border-slate-200 rounded-lg shadow-sm animate-glow">
                         <img src="{{ asset('images/logo.png') }}" alt="Helptify" class="w-8 h-8 object-contain">
                     </div>
                     <span class="text-xl font-bold text-slate-900">Helptify</span>
@@ -181,8 +221,9 @@
         </div>
     </nav>
 
-    <div>
+    <div class="animate-fade-in">
         @yield('content')
     </div>
 </body>
 </html>
+
