@@ -32,7 +32,7 @@ Route::post('/register', [AuthController::class, 'register'])->name('register.pe
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
-Route::middleware('auth')->prefix('student')->name('student.')->group(function () {
+Route::middleware(['auth','role:mahasiswa'])->prefix('student')->name('student.')->group(function () {
     Route::get('/dashboard', [TicketController::class, 'dashboard'])->name('dashboard');
 
     Route::get('/tickets/create', [TicketController::class, 'create'])->name('tickets.create');

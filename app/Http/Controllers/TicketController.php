@@ -16,9 +16,8 @@ use Illuminate\View\View;
 
 class TicketController extends Controller
 {
-    /* ============================================================
-    |  STUDENT DASHBOARD
-    ============================================================ */
+
+    //STUDENT DASHBOARD
     public function dashboard(): View
     {
         $user = Auth::user();
@@ -42,9 +41,8 @@ class TicketController extends Controller
         ]);
     }
 
-    /* ============================================================
-    |  STUDENT - MY TICKETS
-    ============================================================ */
+
+    //STUDENT - MY TICKETS
     public function index(): View
     {
         $tickets = Ticket::where('user_id', Auth::id())->latest()->get();
@@ -52,9 +50,8 @@ class TicketController extends Controller
         return view('student.my-tickets', ['tickets' => $tickets]);
     }
 
-    /* ============================================================
-    |  STUDENT CREATE TICKET
-    ============================================================ */
+
+    //STUDENT CREATE TICKET
     public function create(): View
     {
         return view('student.create-ticket');
@@ -90,9 +87,8 @@ class TicketController extends Controller
             ->with('status', 'Ticket created successfully.');
     }
 
-    /* ============================================================
-    |  STUDENT / ADMIN - SHOW TICKET
-    ============================================================ */
+
+    //STUDENT / ADMIN - SHOW TICKET
     public function show(Ticket $ticket): View
     {
         $this->authorizeTicketVisibility($ticket);
@@ -122,10 +118,7 @@ class TicketController extends Controller
             'creatorName' => $ticket->user?->name ?? 'Unknown',
         ]);
     }
-
-    /* ============================================================
-    |  STUDENT COMMENT
-    ============================================================ */
+   // STUDENT COMMENT
     public function addComment(Request $request, Ticket $ticket): RedirectResponse
     {
         $this->authorizeTicketVisibility($ticket);
@@ -143,10 +136,8 @@ class TicketController extends Controller
 
         return redirect()->back()->with('status', 'Comment added.');
     }
-
-    /* ============================================================
-    |  STUDENT EDIT TICKET
-    ============================================================ */
+    
+    //STUDENT EDIT TICKET
     public function edit(Ticket $ticket): View
     {
         return view('student.edit-ticket', ['ticket' => $ticket]);
@@ -190,10 +181,8 @@ class TicketController extends Controller
             ->route('student.tickets.index')
             ->with('status', 'Ticket deleted successfully.');
     }
-
-    /* ============================================================
-    |  STUDENT PDF REPORT
-    ============================================================ */
+    
+    //STUDENT PDF REPORT
     public function downloadReport(Ticket $ticket)
     {
         $ticket->load(['user', 'comments' => fn($q) => $q->latest()]);
@@ -207,9 +196,8 @@ class TicketController extends Controller
         return $pdf->download("ticket-{$ticket->id}.pdf");
     }
 
-    /* ============================================================
-    |  ADMIN — DASHBOARD
-    ============================================================ */
+
+    //ADMIN — DASHBOARD
     public function adminDashboard(): View
     {
         $tickets = Ticket::with(['user', 'assignedAdmin'])->latest()->get();
@@ -228,9 +216,8 @@ class TicketController extends Controller
         ]);
     }
 
-    /* ============================================================
-    |  ADMIN — LIST ALL TICKETS
-    ============================================================ */
+
+    //ADMIN — LIST ALL TICKETS
     public function adminIndex(Request $request): View
     {
         $query = Ticket::with(['user', 'assignedAdmin'])->latest();
@@ -260,9 +247,8 @@ class TicketController extends Controller
         ]);
     }
 
-    /* ============================================================
-    |  ADMIN — UPDATE STATUS
-    ============================================================ */
+
+    //ADMIN — UPDATE STATUS
     public function updateStatus(Request $request, Ticket $ticket): RedirectResponse
     {
         $validated = $request->validate([
