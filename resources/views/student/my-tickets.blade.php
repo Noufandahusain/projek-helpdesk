@@ -67,6 +67,7 @@
                             <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Title</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Category</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Assigned Admin</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Priority</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Updated</th>
                             <th class="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Action</th>
@@ -90,6 +91,9 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4">
+                                    <span class="text-slate-700 text-sm">{{ $ticket->assignedAdmin->name ?? 'Belum ditetapkan' }}</span>
+                                </td>
+                                <td class="px-6 py-4">
                                     <span class="text-sm font-semibold {{ $priorityClasses[$ticket->priority] ?? 'text-slate-600' }}">
                                         {{ $ticket->priority }}
                                     </span>
@@ -111,7 +115,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-6 py-12 text-center text-slate-600 font-medium">
+                                <td colspan="8" class="px-6 py-12 text-center text-slate-600 font-medium">
                                     No tickets found.
                                 </td>
                             </tr>

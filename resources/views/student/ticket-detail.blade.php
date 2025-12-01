@@ -49,15 +49,15 @@
 
         @php
             $statusClasses = [
-                'Open' => 'bg-yellow-100 text-yellow-800',
-                'In Progress' => 'bg-blue-100 text-blue-800',
-                'Resolved' => 'bg-green-100 text-green-800',
+                'Open' => 'bg-yellow-500 text-yellow-900',
+                'In Progress' => 'bg-blue-500 text-white',
+                'Resolved' => 'bg-green-500 text-white',
             ];
             $priorityBadges = [
-                'Low' => 'bg-slate-100 text-slate-800',
-                'Medium' => 'bg-yellow-100 text-yellow-800',
-                'High' => 'bg-orange-100 text-orange-800',
-                'Urgent' => 'bg-red-100 text-red-800',
+                'Low' => 'text-slate-700 border-2 border-slate-300 bg-transparent',
+                'Medium' => 'bg-yellow-300 text-yellow-900',
+                'High' => 'bg-orange-500 text-white',
+                'Urgent' => 'bg-red-600 text-white',
             ];
         @endphp
 
@@ -69,7 +69,7 @@
                             <h1 class="text-3xl font-bold text-slate-900">{{ $ticket->title }}</h1>
                             <p class="text-slate-600 mt-2">{{ $ticket->id }}</p>
                         </div>
-                        <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold w-fit {{ $statusClasses[$ticket->status] ?? 'bg-slate-100 text-slate-800' }}">
+                        <span class="inline-flex items-center justify-center px-5 py-2.5 rounded-full text-base font-bold shadow-sm w-fit {{ $statusClasses[$ticket->status] ?? 'bg-slate-200 text-slate-800' }}">
                             {{ $ticket->status }}
                         </span>
                     </div>
@@ -160,7 +160,7 @@
                     <div class="space-y-4">
                         <div>
                             <p class="text-sm font-medium text-slate-600 mb-1">Priority</p>
-                            <span class="inline-block px-3 py-1.5 rounded-lg text-sm font-semibold {{ $priorityBadges[$ticket->priority] ?? 'bg-slate-100 text-slate-800' }}">
+                            <span class="inline-flex items-center justify-center px-4 py-2 rounded-full text-base font-bold shadow-sm {{ $priorityBadges[$ticket->priority] ?? 'text-slate-700 border-2 border-slate-300 bg-transparent' }}">
                                 {{ $ticket->priority }}
                             </span>
                         </div>
@@ -168,6 +168,11 @@
                         <div>
                             <p class="text-sm font-medium text-slate-600 mb-1">Created By</p>
                             <p class="text-slate-900 font-medium">{{ $creatorName ?? 'Unknown' }}</p>
+                        </div>
+
+                        <div>
+                            <p class="text-sm font-medium text-slate-600 mb-1">Assigned Admin</p>
+                            <p class="text-slate-900 font-medium">{{ $ticket->assignedAdmin->name ?? 'Belum ditetapkan' }}</p>
                         </div>
 
                         <div>

@@ -19,22 +19,22 @@
             </p>
         </div>
         <div class="flex items-center gap-3">
-            <span class="inline-flex px-4 py-2 rounded-full text-sm font-semibold
+            <span class="inline-flex items-center justify-center px-5 py-2.5 rounded-full text-base font-bold shadow-sm
                 @class([
-                    'bg-yellow-100 text-yellow-800' => $ticket->status === 'Open',
-                    'bg-blue-100 text-blue-800' => $ticket->status === 'In Progress',
-                    'bg-green-100 text-green-800' => $ticket->status === 'Resolved',
-                    'bg-slate-100 text-slate-800' => !in_array($ticket->status, ['Open','In Progress','Resolved']),
+                    'bg-yellow-500 text-yellow-900' => $ticket->status === 'Open',
+                    'bg-blue-500 text-white' => $ticket->status === 'In Progress',
+                    'bg-green-500 text-white' => $ticket->status === 'Resolved',
+                    'bg-slate-200 text-slate-800' => !in_array($ticket->status, ['Open','In Progress','Resolved']),
                 ])
             ">
                 {{ $ticket->status }}
             </span>
-            <span class="inline-flex px-4 py-2 rounded-full text-sm font-semibold
+            <span class="inline-flex items-center justify-center px-5 py-2.5 rounded-full text-base font-bold shadow-sm
                 @class([
-                    'bg-slate-100 text-slate-800' => $ticket->priority === 'Low',
-                    'bg-yellow-100 text-yellow-800' => $ticket->priority === 'Medium',
-                    'bg-orange-100 text-orange-800' => $ticket->priority === 'High',
-                    'bg-red-100 text-red-800' => $ticket->priority === 'Urgent',
+                    'text-slate-700 border-2 border-slate-300 bg-transparent' => $ticket->priority === 'Low',
+                    'bg-yellow-300 text-yellow-900' => $ticket->priority === 'Medium',
+                    'bg-orange-500 text-white' => $ticket->priority === 'High',
+                    'bg-red-600 text-white' => $ticket->priority === 'Urgent',
                 ])
             ">
                 {{ $ticket->priority }}
@@ -164,33 +164,21 @@
 
             <section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
                 <h2 class="text-lg font-semibold text-slate-900 mb-4">Penanggung Jawab</h2>
-                <form action="{{ route('admin.tickets.assign', $ticket) }}" method="POST" class="space-y-3">
-                    @csrf
-                    @method('PATCH')
-                    <label for="assigned_admin_id" class="text-sm font-semibold text-slate-700">Pilih admin</label>
-                    <select
-                        id="assigned_admin_id"
-                        name="assigned_admin_id"
-                        class="w-full mt-1 border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                    >
-                        <option value="">Belum ditetapkan</option>
-                        @foreach ($admins as $admin)
-                            <option value="{{ $admin->id }}" @selected($ticket->assigned_admin_id === $admin->id)>{{ $admin->name }}</option>
-                        @endforeach
-                    </select>
-                    <button type="submit" class="w-full inline-flex items-center justify-center gap-2 px-4 py-2 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50">
-                        Simpan Penugasan
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
-                            <path d="m7 11 2 2 4-4"></path>
-                            <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7"></path>
-                            <path d="M16 5l-4-4-4 4"></path>
-                            <path d="M12 3v8"></path>
-                        </svg>
-                    </button>
-                </form>
-                <div class="mt-4 border-t border-slate-200 pt-4 text-sm text-slate-600">
-                    <p class="font-semibold text-slate-900 mb-1">Admin saat ini</p>
-                    <p>{{ $ticket->assignedAdmin->name ?? 'Belum ada penanggung jawab' }}</p>
+                <div class="space-y-3">
+                    <div>
+                        <p class="text-sm font-semibold text-slate-700 mb-2">Admin Penanggung Jawab</p>
+                        <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                            <div class="p-2 bg-indigo-100 rounded-full">
+                                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24">
+                                    <path d="M16 7a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM12 14a7 7 0 0 0-7 7h14a7 7 0 0 0-7-7z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-slate-900">{{ $ticket->assignedAdmin->name ?? 'Belum ditetapkan' }}</p>
+                                <p class="text-xs text-slate-500">Admin yang menangani tiket ini</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
         </div>

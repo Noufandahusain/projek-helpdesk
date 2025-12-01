@@ -21,7 +21,7 @@ class TicketController extends Controller
     public function dashboard(): View
     {
         $user = Auth::user();
-        $tickets = Ticket::where('user_id', $user->id)->latest()->get();
+        $tickets = Ticket::where('user_id', $user->id)->with('assignedAdmin')->latest()->get();
         $notifications = $user->notifications()->latest()->limit(5)->get();
         $unreadCollection = $user->unreadNotifications;
         $unreadNotifications = $unreadCollection->count();
@@ -45,7 +45,7 @@ class TicketController extends Controller
     //STUDENT - MY TICKETS
     public function index(): View
     {
-        $tickets = Ticket::where('user_id', Auth::id())->latest()->get();
+        $tickets = Ticket::where('user_id', Auth::id())->with('assignedAdmin')->latest()->get();
 
         return view('student.my-tickets', ['tickets' => $tickets]);
     }
@@ -72,6 +72,9 @@ class TicketController extends Controller
             ? $request->file('attachment')->store('ticket-attachments', 'public')
             : null;
 
+        // Auto-assign to first available admin
+        $admin = User::where('role', 'admin')->first();
+
         Ticket::create([
             'user_id' => Auth::id(),
             'title' => $validated['title'],
@@ -80,6 +83,7 @@ class TicketController extends Controller
             'location' => $validated['location'],
             'description' => $validated['description'],
             'attachment_path' => $attachmentPath,
+            'assigned_admin_id' => $admin?->id,
         ]);
 
         return redirect()
@@ -107,7 +111,6 @@ class TicketController extends Controller
                 'comments' => $ticket->comments,
                 'attachmentUrl' => $attachmentUrl,
                 'creatorName' => $ticket->user?->name ?? 'Unknown',
-                'admins' => User::where('role', 'admin')->orderBy('name')->get(),
             ]);
         }
 
@@ -282,13 +285,13 @@ class TicketController extends Controller
     {
         $validated = $request->validate([
             'assigned_admin_id' => [
-                'nullable',
+                'required',
                 Rule::exists('users', 'id')->where(fn($q) => $q->where('role', 'admin')),
             ],
         ]);
 
         $ticket->update([
-            'assigned_admin_id' => $validated['assigned_admin_id'] ?? null,
+            'assigned_admin_id' => $validated['assigned_admin_id'],
         ]);
 
         return back()->with('status', 'Ticket assignment updated.');
