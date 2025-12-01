@@ -53,6 +53,5 @@ Route::middleware(['auth','role:admin'])->prefix('admin')->name('admin.')->group
     Route::get('/tickets', [TicketController::class, 'adminIndex'])->name('tickets.index');
     Route::get('/tickets/{ticket}', [TicketController::class, 'show'])->name('tickets.show');
     Route::patch('/tickets/{ticket}/status', [TicketController::class, 'updateStatus'])->name('tickets.status');
-    Route::patch('/tickets/{ticket}/assign', [TicketController::class, 'assignAdmin'])->name('tickets.assign');
     Route::post('/tickets/{ticket}/comments', [TicketController::class, 'addComment'])->name('tickets.comments.store');
 });

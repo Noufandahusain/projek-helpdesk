@@ -89,19 +89,6 @@
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-        <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 flex items-center justify-between">
-            <div>
-                <p class="text-sm font-semibold text-indigo-700 uppercase tracking-wide">Unassigned tickets</p>
-                <p class="text-4xl font-bold text-indigo-900 mt-2">{{ $unassignedTickets }}</p>
-                <p class="text-sm text-indigo-700 mt-1">Segera tetapkan penanggung jawab.</p>
-            </div>
-            <div class="p-4 bg-white rounded-2xl shadow">
-                <svg class="w-10 h-10 text-indigo-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                    <path d="M12 12c2.761 0 5-2.239 5-5S14.761 2 12 2 7 4.239 7 7s2.239 5 5 5z"></path>
-                    <path d="M3 22a9 9 0 1 1 18 0z"></path>
-                </svg>
-            </div>
-        </div>
         <div class="bg-orange-50 border border-orange-100 rounded-2xl p-6 flex items-center justify-between">
             <div>
                 <p class="text-sm font-semibold text-orange-700 uppercase tracking-wide">High priority open</p>

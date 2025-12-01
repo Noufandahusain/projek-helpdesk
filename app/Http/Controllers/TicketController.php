@@ -107,7 +107,6 @@ class TicketController extends Controller
                 'comments' => $ticket->comments,
                 'attachmentUrl' => $attachmentUrl,
                 'creatorName' => $ticket->user?->name ?? 'Unknown',
-                'admins' => User::where('role', 'admin')->orderBy('name')->get(),
             ]);
         }
 
@@ -208,7 +207,6 @@ class TicketController extends Controller
             'openTickets' => $tickets->where('status', 'Open')->count(),
             'inProgressTickets' => $tickets->where('status', 'In Progress')->count(),
             'resolvedTickets' => $tickets->where('status', 'Resolved')->count(),
-            'unassignedTickets' => $tickets->whereNull('assigned_admin_id')->count(),
             'recentTickets' => $tickets->take(5),
             'highPriorityOpen' => $tickets->filter(function ($ticket) {
                 return $ticket->status !== 'Resolved' && in_array($ticket->priority, ['High', 'Urgent']);
@@ -276,22 +274,6 @@ class TicketController extends Controller
         return redirect()
             ->back()
             ->with('status', 'Ticket status updated.');
-    }
-
-    public function assignAdmin(Request $request, Ticket $ticket): RedirectResponse
-    {
-        $validated = $request->validate([
-            'assigned_admin_id' => [
-                'nullable',
-                Rule::exists('users', 'id')->where(fn($q) => $q->where('role', 'admin')),
-            ],
-        ]);
-
-        $ticket->update([
-            'assigned_admin_id' => $validated['assigned_admin_id'] ?? null,
-        ]);
-
-        return back()->with('status', 'Ticket assignment updated.');
     }
 
     protected function authorizeTicketVisibility(Ticket $ticket): void
