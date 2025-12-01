@@ -106,7 +106,7 @@
             <div>
                 <p class="text-sm font-semibold text-orange-700 uppercase tracking-wide">High priority open</p>
                 <p class="text-4xl font-bold text-orange-900 mt-2">{{ $highPriorityOpen }}</p>
-                <p class="text-sm text-orange-700 mt-1">Fokuskan pada prioritas tinggi & urgent.</p>
+                <p class="text-sm text-orange-700 mt-1">Fokuskan pada prioritas high & urgent.</p>
             </div>
             <div class="p-4 bg-white rounded-2xl shadow">
                 <svg class="w-10 h-10 text-orange-600" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
